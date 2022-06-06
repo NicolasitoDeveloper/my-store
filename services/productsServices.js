@@ -1,74 +1,63 @@
-const faker = require('faker');
-const boom = require("@hapi/boom");
+const pool = require("../libs/postgresPool");
 
 class ProductsService {
 
   constructor() {
-    this.products = [];
-    this.generate();
+    this.pool = pool;
+    this.pool.on("error", (error) => console.error(error))
   }
 
-  generate() {
-    const limit = 100;
-    for (let index = 0; index < limit; index++) {
-      this.products.push({
-        id: faker.datatype.uuid(),
-        name: faker.commerce.productName(),
-        price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.imageUrl(),
-        isBlocked: faker.datatype.boolean(),
-      });
-    }
+  async getAll() {
+    const query = "SELECT * FROM products";
+    const products = await this.pool.query(query);
+    return products.rows;
+  }
+
+  async getOne(id) {
+    const query = "SELECT * FROM products where id =$1"
+    const product = await this.pool.query(query, [id]);
+    return product.rows;
   }
 
   async create(data) {
-    const newProduct = {
-      id: faker.datatype.uuid(),
+    let { product, price } = data;
+    const queryId = "SELECT (MAX(ID) + 1) AS ID FROM PRODUCTS";
+    const { rows } = await this.pool.query(queryId);
+
+    const values = [rows[0].id, product, price];
+    const query = "INSERT INTO PRODUCTS (ID, PRODUCT, PRICE) VALUES ($1, $2, $3)";
+    await this.pool.query(query, values);
+
+    return {
+      id: rows[0].id,
       ...data
-    }
-    this.products.push(newProduct);
-    return newProduct;
-  }
-
-  find() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(this.products);
-      }, 2000);
-    })
-  }
-
-  findOne(id) {
-    const product = this.products.find(item => item.id === id);
-    if (!product) {
-      throw boom.notFound("Product not found");
-    }
-    if (product.isBlocked) {
-      throw boom.conflict("Product is blocked");
-    }
-    return product;
+    };
   }
 
   async update(id, changes) {
-    const index = this.products.findIndex(item => item.id === id);
-    if (index === -1) {
-      throw boom.notFound("Product not found");
-    }
-    const product = this.products[index];
-    this.products[index] = {
-      ...product,
+    const dataUpdate = [];
+    const setQuery = [];
+    Object.entries(changes).forEach((entrie, index) => {
+      setQuery.push(entrie[0] + ` = $${index + 1}`);
+      dataUpdate.push(entrie[1]);
+    });
+
+    const query = `UPDATE PRODUCTS SET ${setQuery.join(", ")} WHERE ID = ${id}`;
+    await this.pool.query(query, dataUpdate);
+
+    return {
+      id,
       ...changes
     };
-    return this.products[index];
   }
 
   async delete(id) {
-    const index = this.products.findIndex(item => item.id === id);
-    if (index === -1) {
-      throw boom.notFound("Product not found");
-    }
-    this.products.splice(index, 1);
-    return { id, message: "Deleted" };
+    const query = "DELETE FROM PRODUCTS WHERE ID =$1";
+    await this.pool.query(query, [id]);
+    return {
+      id,
+      message: "Product deleted"
+    };
   }
 }
 

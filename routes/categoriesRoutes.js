@@ -7,7 +7,7 @@ const router = express.Router();
 const service = new CategoriesService();
 
 router.get("/", async (req, res) => {
-  const categories = await service.find();
+  const categories = await service.getAll();
   res.json(categories);
 });
 
@@ -16,7 +16,7 @@ router.get("/:id",
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const category = await service.findOne(id);
+      const category = await service.getOne(id);
       res.json(category);
     } catch (error) {
       next(error);

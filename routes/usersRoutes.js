@@ -6,9 +6,13 @@ const { createUserSchema, updateUserSchema, getUserSchema } = require("./../sche
 const router = express.Router();
 const service = new UsersService();
 
-router.get("/", async (req, res) => {
-  const users = await service.find();
-  res.json(users);
+router.get("/", async (req, res, next) => {
+  try {
+    const users = await service.getAll();
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get("/:id",
@@ -16,7 +20,7 @@ router.get("/:id",
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const user = await service.findOne(id);
+      const user = await service.getOne(id);
       res.json(user);
     } catch (error) {
       next(error);

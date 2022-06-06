@@ -1,76 +1,63 @@
-const faker = require("faker");
-const boom = require("@hapi/boom");
+const pool = require("../libs/postgresPool");
 
 class UsersService {
 
   constructor() {
-    this.users = [];
-    this.generate();
+    this.pool = pool;
+    this.pool.on("error", (error) => console.error(error))
   }
 
-  async generate() {
-    const limit = 20;
-    for (let index = 0; index < limit; index++) {
-      this.users.push({
-        id: faker.datatype.uuid(),
-        name: faker.name.firstName(),
-        lastName: faker.name.lastName(),
-        avatar: faker.image.imageUrl(),
-        city: faker.address.cityName(),
-        email: faker.internet.email(),
-        isBlocked: faker.datatype.boolean(),
-      })
-    }
+  async getAll() {
+    const query = "SELECT * FROM users";
+    const users = await this.pool.query(query);
+    return users.rows;
+  }
+
+  async getOne(id) {
+    const query = "SELECT * FROM users where id =$1"
+    const user = await this.pool.query(query, [id]);
+    return user.rows;
   }
 
   async create(data) {
-    const newUser = {
-      id: faker.datatype.uuid(),
+    let { username, lastname, firstname, email, city } = data;
+    const queryId = "SELECT (MAX(ID) + 1) AS ID FROM USERS";
+    const { rows } = await this.pool.query(queryId);
+
+    const values = [rows[0].id,  username, lastname, firstname, email, city];
+    const query = "INSERT INTO USERS (ID, USERNAME, LASTNAME, FIRSTNAME, EMAIL, CITY) VALUES ($1, $2, $3, $4, $5, $6)";
+    await this.pool.query(query, values);
+
+    return {
+      id: rows[0].id,
       ...data
-    }
-    this.users.push(newUser);
-    return newUser;
-  }
-
-  find() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() =>{
-        resolve(this.users);
-      }, 2000);
-    })
-  }
-
-  findOne(id) {
-    const user = this.users.find(user => user.id === id);
-    if (!user) {
-      throw boom.notFound("User not found");
-    }
-    if (user.isBlocked) {
-      throw boom.conflict("User is blocked");
-    }
-    return user;
+    };
   }
 
   async update(id, changes) {
-    const index = this.users.findIndex(user => user.id === id);
-    if (index === -1) {
-      throw new Error("User not found");
-    }
-    const user = this.users[index];
-    this.users[index] = {
-      ...user,
+    const dataUpdate = [];
+    const setQuery = [];
+    Object.entries(changes).forEach((entrie, index) => {
+      setQuery.push(entrie[0] + ` = $${index + 1}`);
+      dataUpdate.push(entrie[1]);
+    });
+
+    const query = `UPDATE USERS SET ${setQuery.join(", ")} WHERE ID = ${id}`;
+    await this.pool.query(query, dataUpdate);
+
+    return {
+      id,
       ...changes
     };
-    return this.users[index];
   }
 
   async delete(id) {
-    const index = this.users.findIndex(user => user.id === id);
-    if (index === -1) {
-      throw boom.notFound("User not found");
-    }
-    this.users.splice(index, 1);
-    return { id, message: "Deleted" };
+    const query = "DELETE FROM USERS WHERE ID =$1";
+    await this.pool.query(query, [id]);
+    return {
+      id,
+      message: "User deleted"
+    };
   }
 
 }
