@@ -5,7 +5,7 @@ const {routerApi} = require("./routes");
 const { logErrors, errorHandler, boomErrorHandler } = require("./middlewares/errorHandler");
 
 const app = express();
-const port = process.env.PORT || 3013;
+const port = process.env.PORT || 3015;
 
 app.use(express.json());
 
@@ -35,3 +35,9 @@ app.use(errorHandler);
 app.listen(port, () => {
   console.log("My port: " + port);
 });
+
+
+//docker-compose exec postgres bash
+//psql -h localhost -d my_Store -U Nicolasito
+
+//Object Relational Model

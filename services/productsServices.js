@@ -1,59 +1,71 @@
-const pool = require("../libs/postgresPool");
+const { QueryTypes } = require("sequelize/types");
+const sequelize = require("../libs/sequelize");
 
 class ProductsService {
 
   constructor() {
-    this.pool = pool;
-    this.pool.on("error", (error) => console.error(error))
   }
 
   async getAll() {
     const query = "SELECT * FROM products";
-    const products = await this.pool.query(query);
-    return products.rows;
+    const [data] = await sequelize.query(query);
+    return {
+      data
+    };
   }
 
   async getOne(id) {
-    const query = "SELECT * FROM products where id =$1"
-    const product = await this.pool.query(query, [id]);
-    return product.rows;
+    const query = "SELECT * FROM products where id = ?"
+    const [data] = await sequelize.query(query, {
+      replacements: [id],
+      type: QueryTypes.SELECT
+    }
+    );
+    return data;
   }
 
   async create(data) {
     let { product, price } = data;
     const queryId = "SELECT (MAX(ID) + 1) AS ID FROM PRODUCTS";
-    const { rows } = await this.pool.query(queryId);
+    const [findedId] = await sequelize.query(queryId);
+    const { id } = findedId[0];
 
-    const values = [rows[0].id, product, price];
-    const query = "INSERT INTO PRODUCTS (ID, PRODUCT, PRICE) VALUES ($1, $2, $3)";
-    await this.pool.query(query, values);
-
+    const query = "INSERT INTO PRODUCTS (ID, PRODUCT, PRICE) VALUES (:id, :product, :price)";
+    await sequelize.query(query, {
+      replacements: {
+        id: id,
+        product: product,
+        price: price
+      },
+    });
     return {
-      id: rows[0].id,
-      ...data
+      id,
+      ...data,
     };
   }
 
   async update(id, changes) {
-    const dataUpdate = [];
-    const setQuery = [];
-    Object.entries(changes).forEach((entrie, index) => {
-      setQuery.push(entrie[0] + ` = $${index + 1}`);
-      dataUpdate.push(entrie[1]);
-    });
-
-    const query = `UPDATE PRODUCTS SET ${setQuery.join(", ")} WHERE ID = ${id}`;
-    await this.pool.query(query, dataUpdate);
-
-    return {
+    const datasQuery = [];
+    const updateData = {
       id,
       ...changes
     };
+
+    Object.keys(changes).forEach(key => datasQuery.push(`${key} = :${key}`));
+    const query = `UPDATE PRODUCTS SET ${datasQuery.join(", ")} WHERE ID = :id`;
+    await sequelize.query(query, {
+      replacements: updateData
+    });
+    return updateData;
   }
 
   async delete(id) {
-    const query = "DELETE FROM PRODUCTS WHERE ID =$1";
-    await this.pool.query(query, [id]);
+    const query = "DELETE FROM PRODUCTS WHERE ID = :id";
+    await sequelize.query(query, {
+      replacements: {
+        id: id
+      }
+    });
     return {
       id,
       message: "Product deleted"
