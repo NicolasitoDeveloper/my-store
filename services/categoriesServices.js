@@ -1,63 +1,75 @@
-const pool = require("../libs/postgresPool");
+const { QueryTypes } = require("sequelize");
+const sequelize = require("../libs/sequelize");
 
 class CategoriesService {
 
   constructor() {
-    this.pool = pool;
-    this.pool.on("error", (error) => console.error(error))
   }
 
   async getAll() {
     const query = "SELECT * FROM categories";
-    const categories = await this.pool.query(query);
-    return categories.rows;
+    const [data] = await sequelize.query(query);
+    return {
+      data
+    };
   }
 
   async getOne(id) {
-    const query = "SELECT * FROM categories where id =$1"
-    const category = await this.pool.query(query, [id]);
-    return category.rows
+    const query = "SELECT * FROM categories where id = ?"
+    const [data] = await sequelize.query(query, {
+      replacements: [id],
+      type: QueryTypes.SELECT
+    }
+    );
+    return data;
   }
 
   async create(data) {
     let { category, items } = data;
     const queryId = "SELECT (MAX(ID) + 1) AS ID FROM CATEGORIES";
-    const { rows } = await this.pool.query(queryId);
+    const [findedId] = await sequelize.query(queryId);
+    const { id } = findedId[0];
 
     if (!items) {
       items = 0;
     }
-    const values = [rows[0].id, category, items];
-    const query = "INSERT INTO CATEGORIES (ID, CATEGORY, ITEMS) VALUES ($1, $2, $3)";
-    await this.pool.query(query, values);
-
+    const query = "INSERT INTO CATEGORIES (ID, CATEGORY, ITEMS) VALUES (:id, :category, :items)";
+    await sequelize.query(query, {
+      replacements: {
+        id: id,
+        category: category,
+        items: items
+      },
+    });
     return {
-      id: rows[0].id,
-      ...data
+      id,
+      ...data,
     };
   }
 
   async update(id, changes) {
-    const dataUpdate = [];
-    const setQuery = [];
-
-    Object.entries(changes).forEach((entrie, index) => {
-      setQuery.push(entrie[0] + ` = $${index + 1}`);
-      dataUpdate.push(entrie[1]);
-    });
-
-    const query = `UPDATE CATEGORIES SET ${setQuery.join(", ")} WHERE ID = ${id}`;
-    await this.pool.query(query, dataUpdate);
-
-    return {
+    const datasQuery = [];
+    const updateData = {
       id,
       ...changes
     };
+
+    Object.keys(changes).forEach(key => datasQuery.push(`${key} = :${key}`));
+    const query = `UPDATE CATEGORIES SET ${datasQuery.join(", ")} WHERE ID = :id`;
+    await sequelize.query(query, {
+      replacements: updateData
+    });
+    return updateData;
   }
 
+
   async delete(id) {
-    const query = "DELETE FROM CATEGORIES WHERE ID =$1";
-    await this.pool.query(query, [id]);
+    const query = "DELETE FROM CATEGORIES WHERE ID = :id";
+    await sequelize.query(query, {
+      replacements: {
+        id: id
+      }
+    });
     return {
       id,
       message: "Category deleted"

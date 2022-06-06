@@ -1,4 +1,4 @@
-const { QueryTypes } = require("sequelize/types");
+const { QueryTypes } = require("sequelize");
 const sequelize = require("../libs/sequelize");
 
 class ProductsService {
