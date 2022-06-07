@@ -1,5 +1,5 @@
-const { QueryTypes } = require("sequelize");
-const { models, sequelize } = require("../libs/sequelize");
+const { models } = require("../libs/sequelize");
+const boom = require('@hapi/boom');
 
 class CategoriesService {
 
@@ -12,61 +12,44 @@ class CategoriesService {
   }
 
   async getOne(id) {
-    const query = "SELECT * FROM categories where id = ?"
-    const [data] = await sequelize.query(query, {
-      replacements: [id],
-      type: QueryTypes.SELECT
+    const category = await models.Category.findByPk(id);
+    if (!category) {
+      throw boom.notFound("Category not found");
     }
-    );
-    return data;
+    return category;
   }
 
-  async create(data) {
-    let { category, items } = data;
-    const queryId = "SELECT (MAX(ID) + 1) AS ID FROM CATEGORIES";
-    const [findedId] = await sequelize.query(queryId);
-    const { id } = findedId[0];
-
-    if (!items) {
-      items = 0;
-    }
-    const query = "INSERT INTO CATEGORIES (ID, CATEGORY, ITEMS) VALUES (:id, :category, :items)";
-    await sequelize.query(query, {
-      replacements: {
-        id: id,
-        category: category,
-        items: items
-      },
-    });
-    return {
-      id,
-      ...data,
+  async create(data)  {
+    try {
+      const newCategory = await models.Category.create(data)
+      return newCategory;
+    } catch (error) {
+      return {
+        statusCode: 409,
+        message: error.errors.message,
+        details: error.errors
+      }
     };
   }
 
-  async update(id, changes) {
-    const datasQuery = [];
-    const updateData = {
-      id,
-      ...changes
-    };
-
-    Object.keys(changes).forEach(key => datasQuery.push(`${key} = :${key}`));
-    const query = `UPDATE CATEGORIES SET ${datasQuery.join(", ")} WHERE ID = :id`;
-    await sequelize.query(query, {
-      replacements: updateData
-    });
-    return updateData;
+  async update(id, changes){
+    try {
+      const category = await this.getOne(id);
+    const resp = await category.update(changes);
+    return resp;
+    } catch (error) {
+      return {
+        statusCode: 409,
+        message: error.errors.message,
+        details: error.errors
+      }
+    }
   }
 
 
   async delete(id) {
-    const query = "DELETE FROM CATEGORIES WHERE ID = :id";
-    await sequelize.query(query, {
-      replacements: {
-        id: id
-      }
-    });
+    const category = await this.getOne(id);
+    await category.destroy();
     return {
       id,
       message: "Category deleted"

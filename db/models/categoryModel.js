@@ -9,8 +9,13 @@ const CategorySchema = {
     type: DataTypes.INTEGER
   },
 
-
   category: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    unique: true
+  },
+
+  items: {
     allowNull: false,
     type: DataTypes.STRING,
   },

@@ -45,7 +45,6 @@ class UsersService {
         details: error.errors
       }
     }
-
   }
 
   async delete(id) {

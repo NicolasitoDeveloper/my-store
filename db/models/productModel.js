@@ -12,18 +12,18 @@ const ProductSchema = {
   product: {
     allowNull: false,
     type: DataTypes.STRING,
+    unique: true,
     field: "product_name"
   },
 
   price: {
     allowNull: false,
     type: DataTypes.REAL,
-    unique: true
   },
 
   stockNumber: {
     allowNull: false,
-    type: DataTypes.REAL,
+    type: DataTypes.INTEGER,
     field: "stock_number"
   },
 
