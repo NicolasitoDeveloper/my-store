@@ -19,14 +19,14 @@ function boomErrorHandler(error, req, res, next) {
   next(error);
 }
 
-function ormErorHandler(error, req, res, next) {
+function ormErrorHandler(error, req, res, next) {
   if (error instanceof ValidationError) {
     res.status(409).json({
       statusCode: 409,
-      message: error.errors.message,
+      message: error.name,
       details: error.errors
-    })
+    });
   }
   next(error);
 }
-  module.exports = { logErrors, errorHandler, boomErrorHandler, ormErorHandler }
+  module.exports = { logErrors, errorHandler, boomErrorHandler, ormErrorHandler }

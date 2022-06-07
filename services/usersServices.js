@@ -1,4 +1,3 @@
-const { } = require("sequelize");
 const { models } = require("../libs/sequelize");
 const boom = require('@hapi/boom');
 
@@ -32,6 +31,7 @@ class UsersService {
       }
     };
   }
+
 
   async update(id, changes) {
     const user = await this.getOne(id);
