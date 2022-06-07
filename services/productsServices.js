@@ -1,5 +1,5 @@
 const { QueryTypes } = require("sequelize");
-const sequelize = require("../libs/sequelize");
+const { models, sequelize } = require("../libs/sequelize");
 
 class ProductsService {
 
@@ -7,11 +7,8 @@ class ProductsService {
   }
 
   async getAll() {
-    const query = "SELECT * FROM products";
-    const [data] = await sequelize.query(query);
-    return {
-      data
-    };
+    const resp = await models.Product.findAll();
+    return resp;
   }
 
   async getOne(id) {

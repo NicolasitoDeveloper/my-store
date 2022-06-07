@@ -1,6 +1,6 @@
-const { QueryTypes } = require("sequelize");
-const { models, sequelize } = require("../libs/sequelize");
-
+const { } = require("sequelize");
+const { models } = require("../libs/sequelize");
+const boom = require('@hapi/boom');
 
 class UsersService {
 
@@ -13,60 +13,35 @@ class UsersService {
   }
 
   async getOne(id) {
-    const query = "SELECT * FROM users where id = ?"
-    const [data] = await sequelize.query(query, {
-      replacements: [id],
-      type: QueryTypes.SELECT
+    const user = await models.User.findByPk(id);
+    if (!user) {
+      throw boom.notFound("User not found");
     }
-    );
-    return data;
+    return user;
   }
 
   async create(data) {
-    let { username, lastname, firstname, email, city } = data;
-    const queryId = "SELECT (MAX(ID) + 1) AS ID FROM USERS";
-    const [findedId] = await sequelize.query(queryId);
-    const { id } = findedId[0];
-
-    const query = "INSERT INTO USERS (ID, USERNAME, LASTNAME, FIRSTNAME, EMAIL, CITY) VALUES (:id, :username, :lastname, :firstname, :email, :city)";
-    await sequelize.query(query, {
-      replacements: {
-        id: id,
-        username: username,
-        lastname: lastname,
-        firstname: firstname,
-        email: email,
-        city: city
-      },
-    });
-    return {
-      id,
-      ...data,
+    try {
+      const newUser = await models.User.create(data)
+      return newUser;
+    } catch (error) {
+      return {
+        statusCode: 409,
+        message: error.errors.message,
+        details: error.errors
+      }
     };
   }
 
   async update(id, changes) {
-    const datasQuery = [];
-    const updateData = {
-      id,
-      ...changes
-    };
-
-    Object.keys(changes).forEach(key => datasQuery.push(`${key} = :${key}`));
-    const query = `UPDATE USERS SET ${datasQuery.join(", ")} WHERE ID = :id`;
-    await sequelize.query(query, {
-      replacements: updateData
-    });
-    return updateData;
+    const user = await this.getOne(id);
+    const resp = await user.update(changes);
+    return resp;
   }
 
   async delete(id) {
-    const query = "DELETE FROM USERS WHERE ID = :id";
-    await sequelize.query(query, {
-      replacements: {
-        id: id
-      }
-    });
+    const user = await this.getOne(id);
+    await user.destroy();
     return {
       id,
       message: "User deleted"
