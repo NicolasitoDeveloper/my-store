@@ -33,6 +33,7 @@ const ProductSchema = {
     field: "category"
   },
 
+
   createdAt: {
     allowNull:false,
     type: DataTypes.DATE,

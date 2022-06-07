@@ -9,6 +9,7 @@ const CategorySchema = {
     type: DataTypes.INTEGER
   },
 
+
   category: {
     allowNull: false,
     type: DataTypes.STRING,

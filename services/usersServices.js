@@ -34,9 +34,18 @@ class UsersService {
 
 
   async update(id, changes) {
-    const user = await this.getOne(id);
+    try {
+      const user = await this.getOne(id);
     const resp = await user.update(changes);
     return resp;
+    } catch (error) {
+      return {
+        statusCode: 409,
+        message: error.errors.message,
+        details: error.errors
+      }
+    }
+
   }
 
   async delete(id) {
