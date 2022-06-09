@@ -23,8 +23,8 @@ services:
   mysql:
     image: mysql:5
     environment:
-      - MYQSL_DATABASE=my_store
-      - MYSQL_USER=
+      - MYSQL_DATABASE=my_store
+      - MYSQL_USER=root
       - MYSQL_ROOT_PASSWORD=Nico12
       - MYSQL_PORT=3306
     ports:
@@ -39,4 +39,3 @@ services:
       - PMA_HOST=mysql
     ports:
       - 8080:80
-
