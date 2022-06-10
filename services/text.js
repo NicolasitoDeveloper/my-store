@@ -1,42 +1,42 @@
 const { models } = require("../libs/sequelize");
 const boom = require('@hapi/boom');
 
-class UsersService {
+class ProductsService {
 
-  constructor() { }
+  constructor() {
+  }
 
   async getAll() {
-    const resp = await models.User.findAll();
+    const resp = await models.Product.findAll();
     return resp;
   }
 
   async getOne(id) {
-    const user = await models.User.findByPk(id);
-    if (!user) {
-      throw boom.notFound("User not found");
+    const product = await models.Product.findByPk(id);
+    if (!product) {
+      throw boom.notFound("Product not found");
     }
-    return user;
+    return product;
   }
 
   async create(data) {
     try {
-      const newUser = await models.User.create(data)
-      return newUser;
+      const newProduct = await models.Product.create(data)
+      return newProduct;
     } catch (error) {
       return {
         statusCode: 409,
         message: error.errors.message,
         details: error.errors
       }
-    }
+    };
   }
-
 
   async update(id, changes) {
     try {
-      const user = await this.getOne(id);
-      const resp = await user.update(changes);
-      return resp;
+      const product = await this.getOne(id);
+    const resp = await product.update(changes);
+    return resp;
     } catch (error) {
       return {
         statusCode: 409,
@@ -47,13 +47,13 @@ class UsersService {
   }
 
   async delete(id) {
-    const user = await this.getOne(id);
-    await user.destroy();
+    const product = await this.getOne(id);
+    await product.destroy();
     return {
       id,
-      message: "User deleted"
+      message: "Product deleted"
     };
   }
 }
 
-module.exports = UsersService;
+module.exports = ProductsService;
