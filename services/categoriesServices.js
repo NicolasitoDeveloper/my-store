@@ -7,12 +7,14 @@ class CategoriesService {
   }
 
   async getAll() {
-    const resp = await models.Category.findAll();
-    return resp;
+    const categories = await models.Category.findAll();
+    return categories;
   }
 
   async getOne(id) {
-    const category = await models.Category.findByPk(id);
+    const category = await models.Category.findByPk(id, {
+      include: ["products"]
+    });
     if (!category) {
       throw boom.notFound("Category not found");
     }
