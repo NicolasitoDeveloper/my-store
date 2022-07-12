@@ -1,7 +1,7 @@
 const express = require('express');
 const OrdersService = require('../services/ordersServices');
 const validatorHandler = require('../middlewares/validatorHandler');
-const { getOrderSchema, createOrderSchema } = require('../schemas-DTO data tranfer object/orderSchema');
+const { getOrderSchema, createOrderSchema, addItemSchema } = require('../schemas-DTO data tranfer object/orderSchema');
 
 const router = express.Router();
 const service = new OrdersService();
@@ -27,6 +27,16 @@ router.post(
     const body = req.body;
     const newOrder = await service.create(body);
     res.status(201).json(newOrder);
+  }
+);
+
+router.post(
+  '/add-item',
+  validatorHandler(addItemSchema, 'body'),
+  async (req, res) => {
+    const body = req.body;
+    const newItem = await service.addItem(body);
+    res.status(201).json(newItem);
   }
 );
 

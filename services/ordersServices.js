@@ -18,7 +18,8 @@ class OrderService {
         {
           association: 'customer',
           include: ['user']
-        }
+        },
+        "items"
       ]
     });
     if (!order) {
@@ -31,6 +32,19 @@ class OrderService {
     try {
       const newOrder = await models.Order.create(data)
       return newOrder;
+    } catch (error) {
+      return {
+        statusCode: 409,
+        message: error.errors.message,
+        details: error.errors
+      }
+    };
+  }
+
+  async addItem(data) {
+    try {
+      const newItem = await models.OrderProduct.create(data)
+      return newItem;
     } catch (error) {
       return {
         statusCode: 409,
