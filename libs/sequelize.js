@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize } = require("sequelize");
 
 const { config } = require("./../config/config");
 const setupModels = require("./../db/models");
@@ -9,12 +9,15 @@ const options = {
 }
 
 if (config.isProd) {
-  options.ssl = {
-    rejectUnauthorized: false
+  options.dialectOptions = {
+    ssl: {
+      rejectUnauthorized: false
+    }
   }
 }
-const sequilize = new Sequelize(config.dbUrl, options);
 
-setupModels(sequilize);
+const sequelize = new Sequelize(config.dbUrl, options);
 
-module.exports = sequilize;
+setupModels(sequelize);
+
+module.exports = sequelize;
