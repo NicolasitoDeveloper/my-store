@@ -1,10 +1,9 @@
 const boom = require('@hapi/boom');
-
 const { models } = require('./../libs/sequelize');
 
 class OrderService {
-	constructor() {
-  }
+
+  constructor() { }
 
   async getAll() {
     const orders = await models.Order.findAll({
@@ -38,7 +37,7 @@ class OrderService {
         message: error.errors.message,
         details: error.errors
       }
-    };
+    }
   }
 
   async addItem(data) {
@@ -57,8 +56,8 @@ class OrderService {
   async update(id, changes) {
     try {
       const order = await this.getOne(id);
-    const resp = await order.update(changes);
-    return resp;
+      const resp = await order.update(changes);
+      return resp;
     } catch (error) {
       return {
         statusCode: 409,

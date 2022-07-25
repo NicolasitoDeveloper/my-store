@@ -6,10 +6,10 @@ class CustomersService {
   constructor() { }
 
   async getAll() {
-    const resp = await models.Customer.findAll({
+    const customers = await models.Customer.findAll({
       include: ["user"]
     });
-    return resp;
+    return customers;
   }
 
   async getOne(id) {
@@ -33,7 +33,6 @@ class CustomersService {
         details: error.errors
       }
     }
-
   }
 
   async update(id, changes) {

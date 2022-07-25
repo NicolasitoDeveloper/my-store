@@ -11,8 +11,7 @@ const config = {
   dbHost: process.env.DB_HOST || "localhost",
   dbName: process.env.DB_NAME || "my_store",
   dbPort: process.env.DB_PORT || "5432",
-  dbUrl: process.env.DATABASE_URL,
-
+  dbUrl: process.env.DATABASE_URL
 }
 
 module.exports = { config };

@@ -33,7 +33,6 @@ class UsersService {
     }
   }
 
-
   async update(id, changes) {
     try {
       const user = await this.getOne(id);

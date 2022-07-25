@@ -1,10 +1,9 @@
-const { models } = require("../libs/sequelize");
 const boom = require('@hapi/boom');
+const { models } = require("../libs/sequelize");
 
 class CategoriesService {
 
-  constructor() {
-  }
+  constructor() { }
 
   async getAll() {
     const categories = await models.Category.findAll();
@@ -21,7 +20,7 @@ class CategoriesService {
     return category;
   }
 
-  async create(data)  {
+  async create(data) {
     try {
       const newCategory = await models.Category.create(data)
       return newCategory;
@@ -34,11 +33,11 @@ class CategoriesService {
     };
   }
 
-  async update(id, changes){
+  async update(id, changes) {
     try {
       const category = await this.getOne(id);
-    const resp = await category.update(changes);
-    return resp;
+      const resp = await category.update(changes);
+      return resp;
     } catch (error) {
       return {
         statusCode: 409,
@@ -47,7 +46,6 @@ class CategoriesService {
       }
     }
   }
-
 
   async delete(id) {
     const category = await this.getOne(id);

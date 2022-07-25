@@ -25,7 +25,8 @@ router.get("/:id",
     } catch (error) {
       next(error);
     }
-  });
+  }
+);
 
 router.post("/",
   validatorHandler(createUserSchema, "body"),
@@ -52,7 +53,8 @@ router.patch("/:id",
     } catch (error) {
       next(error);
     }
-  });
+  }
+);
 
 router.delete("/:id",
   validatorHandler(getUserSchema, "params"),

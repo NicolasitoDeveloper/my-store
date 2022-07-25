@@ -40,8 +40,6 @@ const OrderSchema = {
   }
 }
 
-
-
 class Order extends Model {
 
   static associate(models) {
